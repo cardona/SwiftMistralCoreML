@@ -170,7 +170,7 @@ Contributions are welcome! Please open an issue or submit a pull request on the 
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the Apache 2.0 License.
 
 ---
 
