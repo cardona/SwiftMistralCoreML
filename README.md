@@ -17,7 +17,8 @@ An open-source Swift library that enables macOS and iOS projects to utilize the 
 **The Mistral-Interact7B CoreML model is not included in this library.** You must download the model from [Hugging Face](https://huggingface.co/apple/mistral-coreml) and add it to your project manually.
 
 
-[Download Here The Demo App](https://github.com/cardona/SwiftMistralCoreML-DemoApp)
+[Demo App](https://github.com/cardona/SwiftMistralCoreML-DemoApp)
+
 ![Demo of SwiftMistralCoreML App](demo.gif)
 
 
