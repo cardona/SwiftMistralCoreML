@@ -13,19 +13,15 @@ public final class TextGenerator {
     private let modelActor: ModelActor
     private let tokenizerParser: TokenizerParser
     private let bpeEncoder: BPEEncoder
-
+    
     public init() throws {
-        self.modelActor = try ModelActor()
+        self.modelActor = ModelActor()
         self.tokenizerParser = try TokenizerParser()
         self.bpeEncoder = BPEEncoder(tokenizerParser: tokenizerParser)
     }
-
-    public func generateText(messages: [Message],
-                             using parameters: MistralParameters,
-                             progressHandler: (@Sendable (String) -> Void)? = nil) async throws -> String {
-        let mistralInput = try MistralInput(messages: messages,
-                                           bpeEncoder: bpeEncoder,
-                                           tokenizer: tokenizerParser)
+    
+    public func generateText(messages: [Message], using parameters: MistralParameters, progressHandler: (@Sendable (String) -> Void)? = nil) async throws -> String {
+        let mistralInput = try MistralInput(messages: messages, bpeEncoder: bpeEncoder, tokenizer: tokenizerParser)
         
         guard let eosTokenID = bpeEncoder.encode(text: tokenizerParser.eosToken).first else {
             throw TextGeneratorError.invalidEOSToken
@@ -39,8 +35,7 @@ public final class TextGenerator {
         let decodingStrategy = createDecodingStrategy(using: parameters)
         
         for _ in 0..<parameters.maxTokens {
-            let predictedTokenID = try await modelActor.generateNextToken(currentInputIds: currentInputIds,
-                                                                          decodingStrategy: decodingStrategy)
+            let predictedTokenID = try await modelActor.generateNextToken(currentInputIds: currentInputIds, decodingStrategy: decodingStrategy, modelType: parameters.modelType)
             
             currentInputIds.append(predictedTokenID)
             
@@ -57,10 +52,9 @@ public final class TextGenerator {
                 return generatedText.cleanGeneratedText()
             }
         }
-        
         return generatedText.cleanGeneratedText()
     }
-
+    
     private func createDecodingStrategy(using parameters: MistralParameters) -> DecodingStrategy {
         switch parameters.algorithm {
         case .greedy:
