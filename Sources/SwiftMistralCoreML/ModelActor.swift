@@ -9,32 +9,75 @@
 import Foundation
 import CoreML
 
+public enum MistralType: Sendable {
+    case int4
+    case fp16
+}
+
 actor ModelActor {
-    private let model: StatefulMistral7BInstructInt4
-    private var state: StatefulMistral7BInstructInt4State
+    private var model: Any?
+    private var state: Any?
+    private var currentModelType: MistralType?
     
-    init() throws {
-        do {
-            self.model = try StatefulMistral7BInstructInt4(configuration: MLModelConfiguration())
-        } catch {
-            throw TextGeneratorError.missingMistral7B
+    func generateNextToken(currentInputIds: [Int], decodingStrategy: DecodingStrategy, modelType: MistralType) throws -> Int {
+        if model == nil || currentModelType != modelType {
+            try initializeModel(modelType: modelType)
         }
-        self.state = model.makeState()
-    }
-    
-    func generateNextToken(currentInputIds: [Int], decodingStrategy: DecodingStrategy) throws -> Int {
+        
         let inputIdsArray = try createInputIdsArray(tokens: currentInputIds)
         let causalMaskArray = try createCausalMaskArray(sequenceLength: currentInputIds.count)
-        let modelInput = StatefulMistral7BInstructInt4Input(inputIds: inputIdsArray, causalMask: causalMaskArray)
         
-        let prediction: StatefulMistral7BInstructInt4Output
+        let prediction: Any
         do {
-            prediction = try model.prediction(input: modelInput, using: self.state)
+            switch model {
+            case is StatefulMistral7BInstructInt4:
+                let modelInput = StatefulMistral7BInstructInt4Input(inputIds: inputIdsArray, causalMask: causalMaskArray)
+                guard let castedModel = model as? StatefulMistral7BInstructInt4, let castedState = state as? StatefulMistral7BInstructInt4State else {
+                    throw TextGeneratorError.outputCastingError
+                }
+                prediction = try castedModel.prediction(input: modelInput, using: castedState)
+            case is StatefulMistral7BInstructFP16:
+                let modelInput = StatefulMistral7BInstructFP16Input(inputIds: inputIdsArray, causalMask: causalMaskArray)
+                guard let castedModel = model as? StatefulMistral7BInstructFP16, let castedState = state as? StatefulMistral7BInstructFP16State else {
+                    throw TextGeneratorError.outputCastingError
+                }
+                prediction = try castedModel.prediction(input: modelInput, using: castedState)
+            default:
+                throw TextGeneratorError.outputCastingError
+            }
         } catch {
             throw TextGeneratorError.outputCastingError
         }
         
-        return try decodingStrategy.nextToken(logitsArray: prediction.logits)
+        let logitsArray: MLMultiArray
+        switch prediction {
+        case let output as StatefulMistral7BInstructInt4Output:
+            logitsArray = output.logits
+        case let output as StatefulMistral7BInstructFP16Output:
+            logitsArray = output.logits
+        default:
+            throw TextGeneratorError.outputCastingError
+        }
+        
+        return try decodingStrategy.nextToken(logitsArray: logitsArray)
+    }
+    
+    private func initializeModel(modelType: MistralType) throws {
+        do {
+            switch modelType {
+            case .int4:
+                let int4Model = try StatefulMistral7BInstructInt4(configuration: MLModelConfiguration())
+                self.model = int4Model
+                self.state = int4Model.makeState()
+            case .fp16:
+                let fp16Model = try StatefulMistral7BInstructFP16(configuration: MLModelConfiguration())
+                self.model = fp16Model
+                self.state = fp16Model.makeState()
+            }
+            self.currentModelType = modelType
+        } catch {
+            throw TextGeneratorError.missingMistral7B
+        }
     }
     
     private func createInputIdsArray(tokens: [Int]) throws -> MLMultiArray {
