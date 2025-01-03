@@ -9,13 +9,13 @@
 import Foundation
 import CoreML
 
-public enum Role: String {
+public enum Role: String, Sendable {
     case system = "system"
     case user = "user"
     case assistant = "assistant"
 }
 
-public struct Message {
+public struct Message: Sendable {
     public let role: Role
     public let content: String
     
