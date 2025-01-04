@@ -8,7 +8,7 @@ import CoreML
 
 /// Model Prediction Input Type
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-public class StatefulMistral7BInstructInt4Input : MLFeatureProvider {
+public class StatefulMistral7BInstructInt4Input : MLFeatureProvider,  @unchecked Sendable {
 
     /// inputIds as 1 by 1 matrix of 32-bit integers
     public var inputIds: MLMultiArray
@@ -40,13 +40,12 @@ public class StatefulMistral7BInstructInt4Input : MLFeatureProvider {
     public convenience init(inputIds: MLShapedArray<Int32>, causalMask: MLShapedArray<Float16>) {
         self.init(inputIds: MLMultiArray(inputIds), causalMask: MLMultiArray(causalMask))
     }
-
 }
 
 
 /// Model Prediction Output Type
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-public class StatefulMistral7BInstructInt4Output : MLFeatureProvider {
+public class StatefulMistral7BInstructInt4Output : MLFeatureProvider, @unchecked Sendable  {
 
     /// Source provided by CoreML
     private let provider : MLFeatureProvider
@@ -84,7 +83,7 @@ public class StatefulMistral7BInstructInt4Output : MLFeatureProvider {
 
 /// Model Prediction State Type
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-public final class StatefulMistral7BInstructInt4State {
+public final class StatefulMistral7BInstructInt4State : @unchecked Sendable {
     public enum Name: String, CaseIterable {
         case keyCache = "keyCache"
         case valueCache = "valueCache"
@@ -103,7 +102,7 @@ public final class StatefulMistral7BInstructInt4State {
 
 /// Class for model loading and prediction
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-public class StatefulMistral7BInstructInt4 {
+public class StatefulMistral7BInstructInt4 : @unchecked Sendable {
     public let model: MLModel
 
     /// URL of model assuming it was installed in the same bundle as this class

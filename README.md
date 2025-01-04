@@ -160,6 +160,56 @@ let parameters = MistralParameters(
 )
 ```
 
+## Async Prediction
+
+For better performance in scenarios where you need to process multiple requests concurrently, you can use the async prediction interface:
+
+```swift
+let textGenerator = try TextGenerator()
+
+// Process multiple questions concurrently
+try await withThrowingTaskGroup(of: (String, String).self) { group in
+    for question in questions {
+        group.addTask {
+            let messages = [
+                Message(role: .system, content: "You are a helpful assistant."),
+                Message(role: .user, content: question)
+            ]
+            
+            let parameters = MistralParameters(
+                modelType: .int4,
+                userInput: question,
+                systemPrompt: "You are a helpful assistant.",
+                algorithm: .greedy,
+                maxTokens: 16,
+                topK: nil
+            )
+            
+            // Use generateTextAsync for concurrent processing
+            let result = try await textGenerator.generateTextAsync(
+                messages: messages,
+                using: parameters,
+                progressHandler: nil
+            )
+            
+            return (question, result)
+        }
+    }
+    
+    // Collect results as they complete
+    for try await (question, answer) in group {
+        print("Q: \(question)")
+        print("A: \(answer)\n")
+    }
+}
+```
+
+The async interface is particularly useful when:
+- Processing multiple requests concurrently
+- Integrating with async/await workflows
+- Handling batch processing scenarios
+- Building responsive UIs that need to remain interactive during processing
+
 ## Planned Features
 
 - **FP16 Model Support**: Upcoming support for FP16 models, providing better accuracy and performance.
