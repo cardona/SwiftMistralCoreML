@@ -17,6 +17,11 @@ class ModelActor : @unchecked Sendable {
     private var model: Any?
     private var state: Any?
     private var currentModelType: MistralType?
+    private var configuration = MLModelConfiguration()
+
+    init(configuration: MLModelConfiguration) {
+        self.configuration = configuration
+    }
 
     func generateNextToken(
         currentInputIds: [Int],
@@ -249,11 +254,11 @@ class ModelActor : @unchecked Sendable {
         do {
             switch modelType {
             case .int4:
-                let int4Model = try StatefulMistral7BInstructInt4(configuration: MLModelConfiguration())
+                let int4Model = try StatefulMistral7BInstructInt4(configuration: configuration)
                 self.model = int4Model
                 self.state = int4Model.makeState()
             case .fp16:
-                let fp16Model = try StatefulMistral7BInstructFP16(configuration: MLModelConfiguration())
+                let fp16Model = try StatefulMistral7BInstructFP16(configuration: configuration)
                 self.model = fp16Model
                 self.state = fp16Model.makeState()
             }

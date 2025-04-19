@@ -13,8 +13,8 @@ public final class TextGenerator {
     private let tokenizerParser: TokenizerParser
     private let bpeEncoder: BPEEncoder
 
-    public init() throws {
-        self.modelActor = ModelActor()
+    public init(configuration: MLModelConfiguration = MLModelConfiguration()) throws {
+        self.modelActor = ModelActor(configuration: configuration)
         self.tokenizerParser = try TokenizerParser()
         self.bpeEncoder = BPEEncoder(tokenizerParser: tokenizerParser)
     }
