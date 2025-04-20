@@ -1,6 +1,20 @@
 import Testing
 @testable import SwiftMistralCoreML
+import CoreML
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+@Suite("Text Generator", .serialized) struct TextGeneratorTests {
+
+    @Test("Default model configuration")
+    func textGenerator() async throws {
+        let _ = try TextGenerator()
+    }
+
+
+    @Test("Model configuration",
+          arguments: [MLComputeUnits.cpuOnly, .cpuAndGPU, .all, .cpuAndNeuralEngine])
+    func textGeneratorWithConfiguration(computeUnits: MLComputeUnits) async throws {
+        let configuration = MLModelConfiguration()
+        configuration.computeUnits = computeUnits
+        let _ = try TextGenerator(configuration: configuration)
+    }
 }
