@@ -62,7 +62,7 @@ struct TopKDecodingStrategy: DecodingStrategy {
     
     private func softmax(_ logits: [Float]) -> [Float] {
         let maxLogit = logits.max() ?? 0.0
-        let exps = logits.map { exp($0 - maxLogit) }
+        let exps = logits.map { expf($0 - maxLogit) }
         let sumExps = exps.reduce(0, +)
         return exps.map { $0 / sumExps }
     }
