@@ -2,6 +2,22 @@
 
 An open-source Swift library that enables macOS and iOS projects to utilize the Mistral-Interact7B models (INT4 and upcoming FP16) in chat mode. This library includes a complete Swift implementation of the tokenizer and Byte Pair Encoding (BPE) encoder, providing an out-of-the-box solution for integrating advanced language models into your Swift applications.
 
+
+## Table of Contents
+
+- [Features](#features)
+- [Important Note](#important-note)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Model Setup](#model-setup)
+- [Usage](#usage)
+- [Decoding Algorithms](#decoding-algorithms)
+- [Async Prediction](#async-prediction)
+- [Planned Features](#planned-features)
+- [Customization](#customization)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
 
 - **Full Swift Implementation**: Includes tokenizer and BPE encoder written entirely in Swift.
@@ -20,6 +36,11 @@ An open-source Swift library that enables macOS and iOS projects to utilize the 
 [Demo App](https://github.com/cardona/SwiftMistralCoreML-DemoApp)
 
 ![Demo of SwiftMistralCoreML App](demo.gif)
+
+## Prerequisites
+
+- Xcode 15 or later
+- macOS 15+ or iOS 18+
 
 
 
@@ -68,19 +89,15 @@ let parameters = MistralParameters(
 Use the `TextGenerator` class to generate responses:
 
 ```swift
-let tokenizerParser = try TokenizerParser()
-let bpeEncoder = BPEEncoder(tokenizerParser: tokenizerParser)
-let textGenerator = try TextGenerator(bpeEncoder: bpeEncoder, tokenizerParser: tokenizerParser)
+let textGenerator = try TextGenerator()
 
 let messages = [
     Message(role: .system, content: parameters.systemPrompt),
     Message(role: .user, content: parameters.userInput)
 ]
 
-let mistralInput = try MistralInput(messages: messages, bpeEncoder: bpeEncoder, tokenizer: tokenizerParser)
-
 let generatedText = try await textGenerator.generateText(
-    from: mistralInput.inputTokens,
+    messages: messages,
     using: parameters,
     progressHandler: { generatedWord in
         print(generatedWord)
@@ -110,17 +127,13 @@ final class MistralChat {
                 topK: nil
             )
 
-            let tokenizerParser = try TokenizerParser()
-            let bpeEncoder = BPEEncoder(tokenizerParser: tokenizerParser)
-            let textGenerator = try TextGenerator(bpeEncoder: bpeEncoder, tokenizerParser: tokenizerParser)
+            let textGenerator = try TextGenerator()
 
             messages.append(Message(role: .system, content: parameters.systemPrompt))
             messages.append(Message(role: .user, content: parameters.userInput))
 
-            let mistralInput = try MistralInput(messages: messages, bpeEncoder: bpeEncoder, tokenizer: tokenizerParser)
-
             let generatedText = try await textGenerator.generateText(
-                from: mistralInput.inputTokens,
+                messages: messages,
                 using: parameters,
                 progressHandler: { generatedWord in
                     print(generatedWord, terminator: "")
